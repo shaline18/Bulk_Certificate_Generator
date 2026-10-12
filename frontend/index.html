@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certify | Bulk Certificate Generator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <style>
+        :root {
+            --primary: #5b5ce2;
+            --primary-light: #eeeeff;
+            --background: #f7f8fc;
+            --surface: #ffffff;
+            --text: #20243a;
+            --muted: #777d93;
+            --border: #e8eaf2;
+            --success: #159b72;
+            --danger: #d14343;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+        button, input, textarea {
+            font: inherit;
+        }
+        button {
+            cursor: pointer;
+        }
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid var(--border);
+            padding: 26px 18px;
+            flex-shrink: 0;
+        }
+        .brand {
+            margin: 0 6px 36px;
+        }
+        .brand-logo {
+            display: block;
+            width: 100%;
+            max-width: 190px;
+            height: auto;
+        }
+        .nav-label {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 700;
+            letter-spacing: 1.3px;
+            margin: 22px 12px 12px;
+        }
+        .nav-item {
+            display: block;
+            padding: 13px 14px;
+            margin: 5px 0;
+            border-radius: 10px;
+            color: var(--muted);
+            font-size: 14px;
+            text-decoration: none;
+        }
+        .nav-item:hover,
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .nav-item.active {
+            font-weight: 650;
+        }
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 30px 36px;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .topbar h1 {
+            font-size: 27px;
+            margin-bottom: 7px;
+        }
+        .subtitle {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .profile {
+            background: var(--primary-light);
+            color: var(--primary);
+            width: 43px;
+            height: 43px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+        .stat-card, .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px;
+        }
+        .stat-title {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        .stat-number {
+            font-size: 30px;
+            font-weight: 750;
+        }
+        .stat-note {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+            gap: 22px;
+            align-items: start;
+        }
+        .panel {
+            margin-bottom: 22px;
+            min-width: 0;
+        }
+        .panel-heading {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .panel-description {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #d8d9f5;
+            border-radius: 14px;
+            padding: 28px 14px;
+            text-align: center;
+            background: #fafaff;
+        }
+        .upload-icon {
+            font-size: 34px;
+            margin-bottom: 12px;
+        }
+        .upload-area h3 {
+            font-size: 15px;
+            margin-bottom: 9px;
+        }
+        .upload-area p {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        .file-input {
+            display: none;
+        }
+        .btn {
+            display: inline-block;
+            padding: 11px 17px;
+            border: none;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 650;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #4849c8;
+        }
+        .btn-primary:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+        .file-name {
+            color: var(--success);
+            font-size: 12px;
+            margin-top: 12px;
+            overflow-wrap: anywhere;
+        }
+        .message {
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 12px;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: white;
+            color: var(--text);
+            outline: none;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        textarea.form-control {
+            resize: vertical;
+            line-height: 1.6;
+        }
+        .help-text {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 7px;
+            line-height: 1.5;
+        }
+        .certificate {
+            border: 7px double #c8b46d;
+            padding: 24px 12px;
+            text-align: center;
+            background: #fffefa;
+            min-height: 250px;
+            overflow-wrap: anywhere;
+        }
+        .certificate-label {
+            color: #9c8240;
+            font-size: 10px;
+            letter-spacing: 2px;
+            margin-bottom: 18px;
+        }
+        .certificate h2 {
+            font-family: Georgia, serif;
+            color: #292e57;
+            font-size: 25px;
+            margin-bottom: 15px;
+        }
+        .certificate p {
+            color: #74778b;
+            font-size: 11px;
+            line-height: 1.8;
+        }
+        .certificate .recipient {
+            font-family: Georgia, serif;
+            font-size: 20px;
+            color: var(--primary);
+            font-weight: 700;
+            margin: 9px 0;
+        }
+        .certificate .course {
+            color: #292e57;
+            font-weight: 650;
+        }
+        .workflow {
+            list-style: none;
+        }
+        .workflow li {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .workflow li:last-child {
+            border-bottom: none;
+        }
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            display: grid;
+            place-items: center;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .workflow small {
+            display: block;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .job-box {
+            background: #f7f8fc;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+        }
+        .job-progress-track {
+            width: 100%;
+            height: 10px;
+            margin-top: 12px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e8eaf2;
+        }
+        .job-progress-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: var(--primary);
+            transition: width .25s ease;
+        }
+        .status-actions {
+            margin-top: 12px;
+        }
+        .certificate-list {
+            margin-top: 15px;
+        }
+        .certificate-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+        .certificate-item:last-child {
+            border-bottom: none;
+        }
+        .download-link {
+            display: inline-block;
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 6px;
+            text-decoration: none;
+        }
+        .download-link:hover {
+            text-decoration: underline;
+        }
+        .download-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 8px;
+        }
+        @media (max-width: 1050px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main {
+                padding: 24px;
+            }
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 700px) {
+            .app {
+                display: block;
+            }
+            .sidebar {
+                width: 100%;
+                padding: 15px;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .brand {
+                margin: 5px 8px 15px;
+            }
+            .nav-label {
+                display: none;
+            }
+            .sidebar nav {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            .nav-item {
+                padding: 9px 11px;
+                margin: 0;
+            }
+            .main {
+                padding: 20px 14px;
+            }
+            .topbar h1 {
+                font-size: 22px;
+            }
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .stat-card, .panel {
+                padding: 17px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="brand">
+            <img src="logo.svg" alt="Certify - Bulk Certificate Generator" class="brand-logo">
+        </div>
+        <p class="nav-label">WORKSPACE</p>
+        <nav>
+            <a href="#dashboard" class="nav-item active">▦ Dashboard</a>
+            <a href="#upload" class="nav-item">⇧ Recipients</a>
+            <a href="#preview" class="nav-item">▤ Certificate Preview</a>
+            <a href="#workflow" class="nav-item">◷ Generation Guide</a>
+        </nav>
+    </aside>
+    <main class="main" id="dashboard">
+        <header class="topbar">
+            <div>
+                <h1>Dashboard</h1>
+                <p class="subtitle">
+                    Manage and generate certificates in one place.
+                </p>
+            </div>
+            <div class="profile">C</div>
+        </header>
+        <section class="stats">
+            <div class="stat-card">
+                <p class="stat-title">Total Certificates</p>
+                <div class="stat-number" id="totalCertificates">0</div>
+                <p class="stat-note">Certificates generated</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-title">Completed Jobs</p>
+                <div class="stat-number" id="completedJobs">0</div>
+                <p class="stat-note">Successfully completed</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-title">Failed Certificates</p>
+                <div class="stat-number" id="failedCertificates">0</div>
+                <p class="stat-note">Certificates needing attention</p>
+            </div>
+        </section>
+        <section class="content-grid">
+            <div>
+                <div class="panel" id="upload">
+                    <h2 class="panel-heading">Upload Recipients</h2>
+                    <p class="panel-description">
+                        Select a CSV or Excel file, or enter recipient
+                        details manually below.
+                    </p>
+                    <div class="upload-area">
+                        <div class="upload-icon">📄</div>
+                        <h3>Choose your recipient file</h3>
+                        <p>
+                            Upload a CSV or Excel file to automatically load
+                            recipient names and email addresses.
+                        </p>
+                        <input
+                            type="file"
+                            id="recipientFile"
+                            class="file-input"
+                            accept=".csv,.xlsx,.xls"
+                        >
+                        <button
+                            class="btn btn-primary"
+                            id="chooseFileBtn"
+                            type="button"
+                        >
+                            Choose File
+                        </button>
+                        <div class="file-name" id="fileName"></div>
+                        <div class="message" id="uploadMessage" role="status"></div>
+                    </div>
+                    <div style="margin-top:26px;">
+                        <h2 class="panel-heading">Certificate Details</h2>
+                        <p class="panel-description">
+                            Enter the event information and recipient list.
+                        </p>
+                        <form id="certificateForm" novalidate>
+                            <div class="form-group">
+                                <label for="eventName">Event Name</label>
+                                <input
+                                    class="form-control"
+                                    type="text"
+                                    id="eventName"
+                                    placeholder="e.g. Python Workshop"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="eventDate">Event Date</label>
+                                <input
+                                    class="form-control"
+                                    type="date"
+                                    id="eventDate"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="issuer">Issued By</label>
+                                <input
+                                    class="form-control"
+                                    type="text"
+                                    id="issuer"
+                                    placeholder="e.g. ABC Institute"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="recipients">Recipients</label>
+                                <textarea
+                                    class="form-control"
+                                    id="recipients"
+                                    rows="5"
+                                    placeholder="Shaline Pattabi, shaline@example.com&#10;John Doe, john@example.com"
+                                ></textarea>
+                                <p class="help-text">
+                                    Enter one recipient per line using:
+                                    Name, Email
+                                </p>
+                                <div
+                                    id="recipientTableContainer"
+                                    style="display:none; margin-top:16px;"
+                                >
+                                    <h3 style="font-size:14px; margin-bottom:10px;">
+                                        Uploaded Recipients
+                                    </h3>
+                                    <div style="overflow-x:auto;">
+                                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                                            <thead>
+                                                <tr style="background:#eeeeff; text-align:left;">
+                                                    <th style="padding:10px; border:1px solid #e8eaf2;">Name</th>
+                                                    <th style="padding:10px; border:1px solid #e8eaf2;">Email</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="recipientTableBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                type="submit"
+                                id="generateBtn"
+                                class="btn btn-primary"
+                            >
+                                Generate Certificates
+                            </button>
+                            <p id="generationMessage" class="message" role="status"></p>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel" id="workflow">
+                    <h2 class="panel-heading">How It Works</h2>
+                    <p class="panel-description">
+                        Your certificate generation workflow.
+                    </p>
+                    <ol class="workflow">
+                        <li>
+                            <span class="step-number">1</span>
+                            <div>
+                                Enter recipient details
+                                <small>Provide names and valid email addresses.</small>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="step-number">2</span>
+                            <div>
+                                Validate recipients
+                                <small>Correct any missing or invalid information.</small>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="step-number">3</span>
+                            <div>
+                                Generate certificates
+                                <small>Create PDF files using FastAPI.</small>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="step-number">4</span>
+                            <div>
+                                Download certificates
+                                <small>Download the generated PDFs.</small>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+            <div>
+                <div class="panel" id="preview">
+                    <h2 class="panel-heading">Certificate Preview</h2>
+                    <p class="panel-description">
+                        A sample preview of your certificate details.
+                    </p>
+                    <div class="certificate">
+                        <p class="certificate-label">CERTIFICATE OF ACHIEVEMENT</p>
+                        <h2>Certificate</h2>
+                        <p>This certificate is proudly presented to</p>
+                        <p class="recipient" id="previewName">Recipient Name</p>
+                        <p>For participating in</p>
+                        <p class="course" id="previewEvent">Your Course or Event</p>
+                        <p style="margin-top:16px;">
+                            Date: <span id="previewDate">__________</span>
+                        </p>
+                        <p style="margin-top:8px;">
+                            Issued by: <span id="previewIssuer">__________</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="panel" id="generationStatusPanel">
+                    <h2 class="panel-heading">Generation Status</h2>
+                    <p class="panel-description">
+                        Job results and PDF download links will appear here.
+                    </p>
+                    <div id="jobStatus" class="job-box" aria-live="polite">
+                        <strong>Status:</strong> Not started
+                        <p style="color:#777d93;margin-top:8px;">
+                            No generation job started yet.
+                        </p>
+                    </div>
+                    <div class="status-actions">
+                        <button type="button" class="btn btn-primary" id="refreshStatusBtn" disabled>
+                            Refresh Status
+                        </button>
+                    </div>
+                    <div id="certificateList" class="certificate-list"></div>
+                    <div class="download-buttons">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            id="downloadAllBtn"
+                            disabled
+                        >
+                            Download Certificates
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            id="downloadZipBtn"
+                            disabled
+                        >
+                            Download All Certificates (ZIP)
+                        </button>
+                    </div>
+                    <p id="zipMessage" class="message" role="status"></p>
+                </div>
+            </div>
+        </section>
+        <footer class="footer">
+            Certify · Bulk Certificate Generator
+        </footer>
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+"use strict";
+// Live Server (port 5500) reloads the page whenever the backend writes a new PDF, which wipes
+// the results. If this page was opened from anywhere except the backend itself, and the backend
+// is running, move to the backend-served copy, which never auto-reloads.
+const BACKEND_APP_URL = "http://127.0.0.1:8000/app/";
+if (location.port !== "8000") {
+    fetch("http://127.0.0.1:8000/", { mode: "no-cors", cache: "no-store" })
+        .then(() => location.replace(BACKEND_APP_URL))
+        .catch(() => { /* backend not running: stay here, the health check below explains it */ });
+}
+// When this page is served by FastAPI itself (http://127.0.0.1:8000/app/) use the same origin,
+// otherwise (Live Server on :5500, file://, ...) talk to the local backend directly.
+const API_BASE = (location.protocol.startsWith("http") && location.port === "8000")
+    ? location.origin
+    : "http://127.0.0.1:8000";
+const HISTORY_KEY = "certify_generation_history_v1";
+const $ = id => document.getElementById(id);
+const fileInput = $("recipientFile");
+const chooseFileBtn = $("chooseFileBtn");
+const fileName = $("fileName");
+const uploadMessage = $("uploadMessage");
+const form = $("certificateForm");
+const generateBtn = $("generateBtn");
+const generationMessage = $("generationMessage");
+const jobStatus = $("jobStatus");
+const refreshStatusBtn = $("refreshStatusBtn");
+let certificateList = $("certificateList");
+if (!certificateList) {
+    // Recovery guard for an outdated/mismatched HTML layout.
+    certificateList = document.createElement("div");
+    certificateList.id = "certificateList";
+    certificateList.className = "certificate-list";
+    const statusPanel = $("generationStatusPanel");
+    if (statusPanel) statusPanel.appendChild(certificateList);
+}
+const downloadAllBtn = $("downloadAllBtn");
+const downloadZipBtn = $("downloadZipBtn");
+const zipMessage = $("zipMessage");
+const recipientsTextarea = $("recipients");
+let currentJobId = null;
+let currentCertificates = [];
+let currentJobData = null;
+let currentRecipients = [];
+let jobLoadToken = 0;
+function message(element, text, color = "var(--muted)") {
+    element.textContent = text;
+    element.style.color = color;
+}
+function readHistory() {
+    try {
+        const data = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+        return Array.isArray(data) ? data : [];
+    } catch {
+        return [];
+    }
+}
+function writeHistory(history) {
+    try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (error) {
+        console.warn("Could not save generation history in this browser:", error);
+    }
+    updateDashboard();
+}
+function updateDashboard() {
+    const history = readHistory();
+    const total = history.reduce(
+        (sum, job) => sum + Number(job.total || 0), 0
+    );
+    const failed = history.reduce(
+        (sum, job) => sum + Number(job.failed || 0), 0
+    );
+    const completed = history.filter(job =>
+        ["completed", "completed_with_errors", "success", "successful", "done"].includes(
+            String(job.status || "").toLowerCase()
+        )
+    ).length;
+    $("totalCertificates").textContent = total;
+    $("completedJobs").textContent = completed;
+    $("failedCertificates").textContent = failed;
+}
+function saveJob(jobData, certificates) {
+    const history = readHistory();
+    const idValue = jobData.job_id ?? jobData.id ?? currentJobId;
+    if (idValue === undefined || idValue === null) return;
+    const id = String(idValue);
+    const index = history.findIndex(job => String(job.job_id) === id);
+    const previous = index >= 0 ? history[index] : {};
+    const certs = Array.isArray(certificates) ? certificates : [];
+
+    // A zero-length array is not a reliable fallback while the backend job is still running.
+    const totalFallback = certs.length > 0 ? certs.length : (previous.total ?? 0);
+    const total = Number(jobData.total ?? jobData.total_recipients ?? jobData.total_certificates ?? totalFallback);
+    const successFallback = certs.length > 0
+        ? certs.filter(isDownloadable).length
+        : (previous.successful ?? 0);
+    const successful = Number(jobData.successful ?? jobData.succeeded ?? jobData.success_count ?? successFallback);
+    const failedFallback = Math.max(0, total - successful);
+    const failed = Number(jobData.failed ?? jobData.failure_count ?? failedFallback);
+
+    const record = {
+        ...previous,
+        job_id: id,
+        event_name: $("eventName").value.trim() || previous.event_name || "Certificate Generation",
+        status: String(jobData.status ?? previous.status ?? "unknown"),
+        total,
+        successful,
+        failed,
+        updated_at: new Date().toLocaleString()
+    };
+
+    if (index >= 0) history[index] = record;
+    else history.unshift(record);
+    writeHistory(history.slice(0, 200));
+}
+
+function updatePreview() {
+    const lines = recipientsTextarea.value
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+    const first = lines[0] || "";
+    const separator = first.lastIndexOf(",");
+    $("previewName").textContent =
+        separator >= 0 ? first.slice(0, separator).trim() : "Recipient Name";
+    $("previewEvent").textContent =
+        $("eventName").value.trim() || "Your Course or Event";
+    $("previewDate").textContent =
+        $("eventDate").value || "__________";
+    $("previewIssuer").textContent =
+        $("issuer").value.trim() || "__________";
+}
+function parseRecipientLines(lines) {
+    const recipients = [];
+    const errors = [];
+    const seenEmails = new Set();
+    lines.forEach((line, index) => {
+        const separator = line.lastIndexOf(",");
+        if (separator < 1) {
+            errors.push("Line " + (index + 1) +
+                ": use Name, email@example.com");
+            return;
+        }
+        const name = line.slice(0, separator).trim();
+        const email = line.slice(separator + 1).trim().toLowerCase();
+        if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.push("Line " + (index + 1) +
+                ": name or email is invalid.");
+            return;
+        }
+        if (seenEmails.has(email)) {
+            errors.push("Line " + (index + 1) +
+                ": duplicate email " + email);
+            return;
+        }
+        seenEmails.add(email);
+        recipients.push({ name, email });
+    });
+    return { recipients, errors };
+}
+function renderRecipientTable(lines) {
+    const container = $("recipientTableContainer");
+    const body = $("recipientTableBody");
+    body.replaceChildren();
+    const result = parseRecipientLines(lines);
+    result.recipients.forEach(person => {
+        const row = document.createElement("tr");
+        [person.name, person.email].forEach(value => {
+            const cell = document.createElement("td");
+            cell.style.cssText = "padding:10px;border:1px solid #e8eaf2;";
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
+        body.appendChild(row);
+    });
+    container.style.display = result.recipients.length ? "block" : "none";
+}
+function normalizeStatus(value) {
+    return String(value ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_");
+}
+
+const SUCCESS_STATUSES = new Set([
+    "completed", "complete", "success", "successful", "generated", "done",
+    "finished", "issued", "ready", "available", "completed_with_errors"
+]);
+const FAILURE_STATUSES = new Set([
+    "failed", "failure", "error", "cancelled", "canceled", "rejected"
+]);
+const ACTIVE_STATUSES = new Set([
+    "queued", "pending", "processing", "running", "in_progress", "started",
+    "created", "generating", "submitted", "waiting"
+]);
+
+function getCertificateFilename(certificate) {
+    if (typeof certificate === "string") {
+        const clean = certificate.replace(/\\/g, "/").split("/").pop();
+        return /\.pdf$/i.test(clean) ? clean : "";
+    }
+    if (!certificate || typeof certificate !== "object") return "";
+
+    const direct = certificate.filename || certificate.file_name ||
+        certificate.pdf_filename || certificate.generated_filename ||
+        certificate.output_filename;
+    if (direct) {
+        const clean = String(direct).replace(/\\/g, "/").split("/").pop();
+        return /\.pdf$/i.test(clean) ? clean : "";
+    }
+
+    const pathValue = certificate.file_path || certificate.filepath ||
+        certificate.pdf_path || certificate.path || certificate.file;
+    if (pathValue) {
+        const clean = String(pathValue).replace(/\\/g, "/").split("/").pop();
+        if (/\.pdf$/i.test(clean)) return clean;
+    }
+
+    const id = certificate.certificate_id ?? certificate.id;
+    if (id !== undefined && id !== null && /\.pdf$/i.test(String(id))) {
+        return String(id).replace(/\\/g, "/").split("/").pop();
+    }
+    return "";
+}
+
+function getCertificateUrl(certificate) {
+    if (!certificate || typeof certificate !== "object") {
+        return "";
+    }
+
+    // Use a direct download URL if the backend supplies one.
+    const directUrl =
+        certificate.download_url ||
+        certificate.downloadUrl ||
+        certificate.pdf_url ||
+        certificate.url;
+
+    if (directUrl) {
+        try {
+            return new URL(String(directUrl), API_BASE).href;
+        } catch (error) {
+            console.error("Invalid certificate URL:", directUrl, error);
+        }
+    }
+
+    // The actual FastAPI route uses the numeric certificate ID.
+    const certificateId =
+        certificate.certificate_id ?? certificate.id;
+
+    if (
+        certificateId !== undefined &&
+        certificateId !== null &&
+        certificateId !== ""
+    ) {
+        return (
+            API_BASE +
+            "/certificates/" +
+            encodeURIComponent(certificateId) +
+            "/download"
+        );
+    }
+
+    return "";
+}
+function isDownloadable(certificate) {
+    const hasError = Boolean(certificate && (certificate.error_message || certificate.error));
+    return !hasError && Boolean(getCertificateUrl(certificate));
+}
+
+function certificateIsTerminal(certificate) {
+    const status = normalizeStatus(certificate.status);
+    return SUCCESS_STATUSES.has(status) || FAILURE_STATUSES.has(status) ||
+        Boolean(certificate.error_message || certificate.error);
+}
+
+function getJobCertificates(data) {
+    if (Array.isArray(data.certificates)) return data.certificates;
+    if (Array.isArray(data.results)) return data.results;
+    if (Array.isArray(data.items)) return data.items;
+    if (data.data && Array.isArray(data.data.certificates)) return data.data.certificates;
+    return null;
+}
+
+function isJobTerminal(data, certificates = currentCertificates) {
+    const status = normalizeStatus(data && data.status);
+    if (SUCCESS_STATUSES.has(status) || FAILURE_STATUSES.has(status)) return true;
+    if (ACTIVE_STATUSES.has(status)) return false;
+
+    const total = Number((data && (data.total ?? data.total_recipients ?? data.total_certificates)) ?? 0);
+    if (certificates.length > 0 && certificates.every(certificateIsTerminal)) {
+        return total <= 0 || certificates.length >= total;
+    }
+    return false;
+}
+
+function isJobProcessing(data) {
+    return !isJobTerminal(data, currentCertificates);
+}
+
+function renderCertificates(certificates) {
+    currentCertificates = Array.isArray(certificates) ? certificates : [];
+    certificateList.replaceChildren();
+
+    currentCertificates.forEach((certificate, index) => {
+        const item = document.createElement("div");
+        item.className = "certificate-item";
+
+        const name = document.createElement("strong");
+        name.textContent = certificate.recipient_name || certificate.name ||
+            certificate.recipient || (getCertificateFilename(certificate) || "Certificate " + (index + 1));
+
+        const filename = getCertificateFilename(certificate);
+        const id = certificate.certificate_id ?? certificate.id ?? "";
+        const status = String(certificate.status || "completed");
+        const statusText = document.createElement("p");
+        statusText.textContent = (filename ? "File: " + filename : (id ? "Certificate ID: " + id : "")) +
+            ((filename || id) ? " | " : "") + "Status: " + status;
+        item.append(name, statusText);
+
+        const url = getCertificateUrl(certificate);
+        if (url && isDownloadable(certificate)) {
+            const link = document.createElement("a");
+            link.className = "download-link";
+            link.href = url;
+            link.textContent = "Download PDF";
+            link.rel = "noopener noreferrer";
+            link.download = filename || (backendFilenameStem(certificate.recipient_name || name.textContent) + ".pdf");
+            link.addEventListener("click", async event => {
+                event.preventDefault();
+                await forceDownload(url, link.download);
+            });
+            item.appendChild(link);
+        } else if (certificate.error_message || certificate.error) {
+            const error = document.createElement("p");
+            error.textContent = "Error: " + (certificate.error_message || certificate.error);
+            error.style.color = "var(--danger)";
+            item.appendChild(error);
+        }
+        certificateList.appendChild(item);
+    });
+
+    const count = currentCertificates.filter(isDownloadable).length;
+    const reportedSuccess = Number((currentJobData && (
+        currentJobData.successful ?? currentJobData.succeeded ?? currentJobData.success_count
+    )) ?? 0);
+    downloadAllBtn.disabled = count === 0;
+    downloadAllBtn.textContent = count ? "Download Certificates (" + count + ")" : "Download Certificates";
+    downloadZipBtn.style.display = "inline-block";
+    // Some working backends return a completed summary from POST /jobs but no per-file array.
+    // Let the ZIP endpoint remain available when that summary confirms successes.
+    downloadZipBtn.disabled = !currentJobId || isJobProcessing(currentJobData) || (count === 0 && reportedSuccess === 0);
+}
+
+async function forceDownload(url, filename) {
+    let objectUrl;
+    try {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const blob = await response.blob();
+        if (!blob.size) throw new Error("The returned PDF is empty.");
+        objectUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = objectUrl;
+        anchor.download = filename || "certificate.pdf";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        return true;
+    } catch (error) {
+        console.error("PDF download error:", error);
+        // Keep a direct-link fallback in case the API doesn't permit cross-origin fetches.
+        window.open(url, "_blank", "noopener,noreferrer");
+        message(generationMessage,
+            "The PDF could not be forced into a download (" + error.message + "). The certificate link was opened as a fallback.",
+            "var(--danger)");
+        return false;
+    } finally {
+        if (objectUrl) setTimeout(() => URL.revokeObjectURL(objectUrl), 15000);
+    }
+}
+
+function backendFilenameStem(recipientName) {
+    // Matches create_filename() in certificate_generator.py.
+    const safeName = String(recipientName || "Recipient")
+        .replace(/[<>:"/\\|?*\x00-\x1f]/g, "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .join("_");
+    return safeName || "Recipient";
+}
+
+function updateJobStatus(data) {
+    const status = normalizeStatus(data.status) || (isJobTerminal(data) ? "completed" : "processing");
+    const totalRaw = data.total ?? data.total_recipients ?? data.total_certificates;
+    const total = Number(totalRaw ?? currentCertificates.length ?? 0);
+    const successful = Number(data.successful ?? data.succeeded ?? data.success_count ??
+        currentCertificates.filter(isDownloadable).length);
+    const failed = Number(data.failed ?? data.failure_count ??
+        currentCertificates.filter(certificate => FAILURE_STATUSES.has(normalizeStatus(certificate.status)) || certificate.error || certificate.error_message).length);
+    const processed = Math.min(total, successful + failed);
+    const percent = total > 0 ? Math.max(0, Math.min(100, Math.round(processed / total * 100))) : 0;
+
+    jobStatus.replaceChildren();
+    const title = document.createElement("strong");
+    title.textContent = "Job #" + (data.job_id ?? currentJobId) + " — " + status.replace(/_/g, " ");
+    jobStatus.appendChild(title);
+
+    const details = document.createElement("p");
+    details.style.marginTop = "8px";
+    details.textContent = "Total: " + total + " | Successful: " + successful + " | Failed: " + failed;
+    jobStatus.appendChild(details);
+
+    if (total > 0) {
+        const track = document.createElement("div");
+        track.className = "job-progress-track";
+        track.setAttribute("role", "progressbar");
+        track.setAttribute("aria-label", "Certificate generation progress");
+        track.setAttribute("aria-valuemin", "0");
+        track.setAttribute("aria-valuemax", String(total));
+        track.setAttribute("aria-valuenow", String(Math.min(total, processed)));
+        const fill = document.createElement("div");
+        fill.className = "job-progress-fill";
+        fill.style.width = (SUCCESS_STATUSES.has(status) ? 100 : percent) + "%";
+        track.appendChild(fill);
+        const progressLabel = document.createElement("p");
+        progressLabel.style.marginTop = "4px";
+        progressLabel.style.color = "var(--muted)";
+        progressLabel.textContent = (SUCCESS_STATUSES.has(status) ? 100 : percent) + "% processed";
+        jobStatus.append(track, progressLabel);
+    }
+}
+
+async function apiJson(url, options = {}) {
+    const response = await fetch(url, options);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        const detail = data.detail ?? data.message;
+        throw new Error(
+            typeof detail === "string" ? detail :
+            JSON.stringify(detail || "HTTP " + response.status)
+        );
+    }
+    return data;
+}
+async function loadJob(jobId) {
+    // GET /jobs/{id} returns every certificate with its certificate_id, which is what
+    // GET /certificates/{certificate_id}/download needs.
+    const myToken = ++jobLoadToken;
+    currentJobId = jobId;
+    refreshStatusBtn.disabled = true;
+    refreshStatusBtn.textContent = "Loading...";
+    message(generationMessage, "Loading certificates for job #" + jobId + "...", "var(--muted)");
+
+    try {
+        let details = null;
+        let fetchError = null;
+        try {
+            details = await apiJson(API_BASE + "/jobs/" + encodeURIComponent(jobId));
+        } catch (error) {
+            fetchError = error;
+            console.error("GET /jobs/" + jobId + " failed:", error);
+        }
+        if (myToken !== jobLoadToken) return;
+
+        if (details) {
+            currentJobData = { ...(currentJobData || {}), ...details, job_id: details.job_id ?? jobId };
+        } else if (!currentJobData) {
+            currentJobData = { job_id: jobId, status: "completed" };
+        }
+        renderCertificates(details ? (getJobCertificates(details) || []) : []);
+        updateJobStatus(currentJobData);
+        saveJob(currentJobData, currentCertificates);
+        updateDashboard();
+
+        const total = Number(currentJobData.total ?? currentRecipients.length);
+        const successCount = Number(currentJobData.successful ?? currentCertificates.filter(isDownloadable).length);
+        const failedCount = Number(currentJobData.failed ?? Math.max(0, total - successCount));
+        const readyLinks = currentCertificates.filter(isDownloadable).length;
+
+        if (fetchError) {
+            message(generationMessage,
+                "Job #" + jobId + " was created, but the certificate list could not be loaded (" +
+                fetchError.message + "). Click Refresh Status to try again" +
+                (successCount > 0 ? ", or use the ZIP button." : "."),
+                "var(--danger)");
+        } else if (readyLinks > 0) {
+            message(generationMessage,
+                "Job #" + jobId + " " + normalizeStatus(currentJobData.status).replace(/_/g, " ") + ": " +
+                successCount + " certificate(s) generated, " + readyLinks + " ready to download." +
+                (failedCount ? " Failed: " + failedCount + "." : ""),
+                failedCount ? "var(--danger)" : "var(--success)");
+        } else if (failedCount > 0) {
+            message(generationMessage,
+                "Job #" + jobId + " finished with errors. Failed certificates: " + failedCount + ".",
+                "var(--danger)");
+        } else {
+            message(generationMessage,
+                "Job #" + jobId + " status: " + (normalizeStatus(currentJobData.status) || "unknown") + ".",
+                "var(--muted)");
+        }
+    } catch (error) {
+        console.error("Frontend result rendering error:", error);
+        message(generationMessage, "The backend returned a job result, but the frontend could not render it: " + error.message,
+            "var(--danger)");
+    } finally {
+        if (myToken === jobLoadToken) {
+            refreshStatusBtn.disabled = false;
+            refreshStatusBtn.textContent = "Refresh Status";
+        }
+    }
+}
+
+// Choose CSV or Excel file.
+chooseFileBtn.addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    fileName.textContent = "Selected: " + file.name;
+    try {
+        if (typeof XLSX === "undefined") {
+            throw new Error("Excel/CSV library did not load. Check your internet connection.");
+        }
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: "array" });
+        if (!workbook.SheetNames.length) {
+            throw new Error("No worksheet found in the file.");
+        }
+        const rows = XLSX.utils.sheet_to_json(
+            workbook.Sheets[workbook.SheetNames[0]],
+            { header: 1, defval: "" }
+        );
+        if (!rows.length) throw new Error("The selected file is empty.");
+        const headers = rows[0].map(value =>
+            String(value).replace(/^\uFEFF/, "").trim().toLowerCase()
+        );
+        let nameIndex = headers.findIndex(value =>
+            ["name", "recipient", "recipient_name", "full name"].includes(value)
+        );
+        let emailIndex = headers.findIndex(value =>
+            ["email", "email address", "recipient_email"].includes(value)
+        );
+        let startRow = 0;
+        if (nameIndex >= 0 && emailIndex >= 0) {
+            startRow = 1;
+        } else {
+            nameIndex = 0;
+            emailIndex = 1;
+        }
+        const lines = [];
+        for (let i = startRow; i < rows.length; i++) {
+            const name = String(rows[i][nameIndex] ?? "").trim();
+            const email = String(rows[i][emailIndex] ?? "").trim();
+            if (!name && !email) continue;
+            if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                throw new Error("Invalid name or email in row " + (i + 1));
+            }
+            lines.push(name + ", " + email);
+        }
+        if (!lines.length) throw new Error("No recipients found in the file.");
+        recipientsTextarea.value = lines.join("\n");
+        renderRecipientTable(lines);
+        updatePreview();
+        message(
+            uploadMessage,
+            lines.length + " recipients loaded successfully.",
+            "var(--success)"
+        );
+    } catch (error) {
+        message(uploadMessage, error.message, "var(--danger)");
+    }
+});
+recipientsTextarea.addEventListener("input", () => {
+    const lines = recipientsTextarea.value
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+    renderRecipientTable(lines);
+    updatePreview();
+});
+["eventName", "eventDate", "issuer"].forEach(id => {
+    $(id).addEventListener("input", updatePreview);
+});
+// Generate certificates.
+form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    console.info(
+        "[Certify] Submit handler fired. Page:",
+        window.location.href
+    );
+
+    // Show feedback immediately.
+    message(
+        generationMessage,
+        "Certificate generation is starting...",
+        "var(--primary)"
+    );
+
+    // Give the browser a chance to display the message.
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    const lines = recipientsTextarea.value
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+    const parsed = parseRecipientLines(lines);
+    if (!lines.length) {
+        message(
+            generationMessage,
+            "Upload a recipient file or enter recipient details first.",
+            "var(--danger)"
+        );
+        return;
+    }
+    if (parsed.errors.length) {
+        message(
+            generationMessage,
+            parsed.errors.join("\n"),
+            "var(--danger)"
+        );
+        return;
+    }
+    const payload = {
+        event_name: $("eventName").value.trim(),
+        event_date: $("eventDate").value,
+        issuer: $("issuer").value.trim(),
+        recipients: parsed.recipients
+    };
+    if (!payload.event_name || !payload.event_date || !payload.issuer) {
+        message(
+            generationMessage,
+            "Please fill in Event Name, Event Date and Issued By.",
+            "var(--danger)"
+        );
+        return;
+    }
+   generateBtn.disabled = true;
+generateBtn.textContent = "Generating...";
+downloadZipBtn.disabled = true;
+downloadAllBtn.disabled = true;
+refreshStatusBtn.disabled = true;
+
+// Update the Generation Status panel immediately.
+jobStatus.replaceChildren();
+
+const pendingTitle = document.createElement("strong");
+pendingTitle.textContent = "Status: Generating";
+
+const pendingDetails = document.createElement("p");
+pendingDetails.style.marginTop = "8px";
+pendingDetails.style.color = "var(--muted)";
+pendingDetails.textContent =
+    "Sending recipient details to the backend. Please wait...";
+
+jobStatus.append(pendingTitle, pendingDetails);
+
+message(
+    generationMessage,
+    "Certificate generation is being submitted to the backend...",
+    "var(--primary)"
+);
+
+await new Promise(resolve => requestAnimationFrame(resolve));
+
+console.info("[Certify] Sending POST /jobs");
+    try {
+        const result = await apiJson(API_BASE + "/jobs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        console.log("POST /jobs response:", result);
+        const returnedJobId = result.job_id ?? result.id;
+        if (returnedJobId === undefined || returnedJobId === null) {
+            throw new Error("The backend response did not include job_id (or id).");
+        }
+        currentJobId = returnedJobId;
+        currentRecipients = parsed.recipients.map(person => ({ ...person }));
+        currentCertificates = [];
+        // POST /jobs returns only the summary counts; loadJob() then fetches the certificate list.
+        currentJobData = {
+            ...result,
+            job_id: returnedJobId,
+            total: result.total ?? result.total_recipients ?? result.total_certificates ?? parsed.recipients.length,
+            status: result.status ?? "completed"
+        };
+        saveJob(currentJobData, []);
+        updateJobStatus(currentJobData);
+        message(
+            generationMessage,
+            "Job #" + currentJobId + " returned by backend. Preparing certificate links...",
+            "var(--success)"
+        );
+        $("generationStatusPanel").scrollIntoView({ behavior: "smooth", block: "center" });
+        await loadJob(currentJobId);
+   } catch (error) {
+    console.error("[Certify] Generation error:", error);
+
+    jobStatus.replaceChildren();
+
+    const errorTitle = document.createElement("strong");
+    errorTitle.textContent = "Status: Generation failed";
+
+    const errorDetails = document.createElement("p");
+    errorDetails.style.marginTop = "8px";
+    errorDetails.style.color = "var(--danger)";
+    errorDetails.textContent = error.message;
+
+    jobStatus.append(errorTitle, errorDetails);
+
+    message(
+        generationMessage,
+        "Generation failed: " + error.message,
+        "var(--danger)"
+    );
+} finally {
+    generateBtn.disabled = false;
+    generateBtn.textContent = "Generate Certificates";
+}
+});
+// Re-fetch the job and its certificates from GET /jobs/{id}.
+refreshStatusBtn.addEventListener("click", async () => {
+    if (currentJobId === null || currentJobId === undefined) return;
+    await loadJob(currentJobId);
+});
+
+// Download each available PDF using GET /certificates/{certificate_id}/download.
+downloadAllBtn.addEventListener("click", async () => {
+    const files = currentCertificates.filter(isDownloadable).map(certificate => ({
+        url: getCertificateUrl(certificate),
+        filename: getCertificateFilename(certificate) || "certificate.pdf"
+    }));
+    if (!files.length) {
+        message(generationMessage,
+            "No downloadable certificates yet. Try Refresh Status or the ZIP download.",
+            "var(--danger)");
+        return;
+    }
+    let downloaded = 0;
+    for (const file of files) {
+        const ok = await forceDownload(file.url, file.filename);
+        if (ok !== false) downloaded++;
+        await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    message(generationMessage,
+        "Requested download for " + files.length + " PDF(s). If the browser asks, allow multiple downloads.",
+        "var(--success)");
+});
+// Download ZIP from the existing backend endpoint.
+downloadZipBtn.addEventListener("click", async () => {
+    if (!currentJobId) {
+        message(zipMessage, "Generate a job first.", "var(--danger)");
+        return;
+    }
+    downloadZipBtn.disabled = true;
+    downloadZipBtn.textContent = "Preparing ZIP...";
+    let objectUrl;
+    try {
+        const response = await fetch(
+            API_BASE + "/jobs/" +
+            encodeURIComponent(currentJobId) + "/download-zip"
+        );
+        if (!response.ok) {
+            const body = await response.text();
+            throw new Error(
+                "HTTP " + response.status + ": " + body
+            );
+        }
+        const blob = await response.blob();
+        if (!blob.size) throw new Error("The ZIP file is empty.");
+        objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = "certificates_job_" + currentJobId + ".zip";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        message(
+            zipMessage,
+            "ZIP download started. Check your browser Downloads folder.",
+            "var(--success)"
+        );
+    } catch (error) {
+        console.error("ZIP download error:", error);
+        message(
+            zipMessage,
+            "ZIP download failed: " + error.message,
+            "var(--danger)"
+        );
+    } finally {
+        setTimeout(() => {
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+        }, 10000);
+        const reportedSuccess = Number((currentJobData && (
+            currentJobData.successful ?? currentJobData.succeeded ?? currentJobData.success_count
+        )) ?? 0);
+        downloadZipBtn.disabled = !currentJobId || isJobProcessing(currentJobData) ||
+            (!currentCertificates.some(isDownloadable) && reportedSuccess === 0);
+        downloadZipBtn.textContent = "Download All Certificates (ZIP)";
+    }
+});
+// Initial setup.
+updatePreview();
+updateDashboard();
+refreshStatusBtn.disabled = true;
+// Clear stale result UI if the browser restores this page from its back/forward cache.
+window.addEventListener("pageshow", event => {
+    if (!event.persisted) return;
+    ++jobLoadToken;
+    currentJobId = null;
+    currentCertificates = [];
+    currentJobData = null;
+    currentRecipients = [];
+    certificateList.replaceChildren();
+    jobStatus.replaceChildren();
+    const title = document.createElement("strong");
+    title.textContent = "Status: Not started";
+    const detail = document.createElement("p");
+    detail.style.marginTop = "8px";
+    detail.style.color = "var(--muted)";
+    detail.textContent = "No generation job started yet.";
+    jobStatus.append(title, detail);
+    downloadAllBtn.disabled = true;
+    downloadZipBtn.disabled = true;
+    downloadAllBtn.textContent = "Download Certificates";
+    downloadZipBtn.textContent = "Download All Certificates (ZIP)";
+    refreshStatusBtn.disabled = true;
+    refreshStatusBtn.textContent = "Refresh Status";
+    message(generationMessage, "");
+    message(zipMessage, "");
+});
+fetch(API_BASE + "/")
+    .then(response => {
+        if (!response.ok) throw new Error("Backend unavailable");
+        return response.json();
+    })
+    .then(data => {
+        message(
+            uploadMessage,
+            "Backend connected successfully.",
+            "var(--success)"
+        );
+        console.log("Backend response:", data);
+    })
+    .catch(error => {
+        console.warn("Backend health check:", error.message);
+        message(
+            uploadMessage,
+            "Backend not detected. Start FastAPI before generating certificates.",
+            "var(--danger)"
+        );
+    });
+</script>
+</body>
+</html>

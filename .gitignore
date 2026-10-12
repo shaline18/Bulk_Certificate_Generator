@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+ 
+# Virtual environment
+.venv/
+venv/
+ 
+# Environment variables / secrets
+.env
+.env.*
+ 
+# Generated files and local database
+generated_certificates/
+certificates.db
+*.db
+ 
+# Test and tool caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+ 
+# Editors and OS files
+.vscode/
+.idea/
+.DS_Store
