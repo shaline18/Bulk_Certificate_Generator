@@ -35,7 +35,6 @@ Setup
 You need Python 3.12+ and uv.
 
 bash
-git clone <your-repo-url>
 cd Bulk_Certificate_Generator
 uv sync
 Run the application
